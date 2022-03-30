@@ -16,31 +16,48 @@ namespace UnitTestProject1
     {
         [TestMethod]
         public void TestMethod1()
-        {            
-            executeTest();
-        }
-        static void executeTest()
         {
             IWebDriver driver = new ChromeDriver(@"C:\Driver");
-            driver.Navigate().GoToUrl("https://www.amazon.com");
-            IWebElement query = driver.FindElement(By.Id("twotabsearchtextbox"));
-            query.SendKeys("laptop");            
-            query.Submit();
+            try
+            {
+                
+                executeTest(driver, "laptop", 100);
+                executeTest(driver, "mobile", 50);
+            }
+            finally
+            {
+                //driver.Close();
+                driver.Quit();
 
-            driver.FindElement(By.XPath("//a[@class='a-link-normal s-no-outline']")).Click();
+            }
 
-            IWebElement element = driver.FindElement(By.Id("corePrice_feature_div"));
+        }
+        static void executeTest(IWebDriver driver, string searchPharse, decimal expectedMaximumValue)
+        {              
+                driver.Navigate().GoToUrl("https://www.amazon.com");
 
-            decimal amount = decimal.Parse(element.Text.Replace("$", ""), NumberStyles.Currency);
+                IWebElement query = driver.FindElement(By.Id("twotabsearchtextbox"));
+                query.SendKeys(searchPharse);
+                query.Submit();
+
+                driver.FindElement(By.XPath("//a[@class='a-link-normal s-no-outline']")).Click();
+
+                IWebElement element = driver.FindElement(By.Id("corePrice_feature_div"));
+
+                decimal amount = decimal.Parse(element.Text.Replace("$", ""), NumberStyles.Currency);
+
+                if (element != null)
+                {
+                    Assert.IsTrue(amount > expectedMaximumValue, "the '"+ searchPharse +"' price is less than $100");
+                }
+            }
+          
+
 
             //IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
             //string script = "alert('" + amount + "');";
             //js.ExecuteScript(script);
             //
-            Assert.IsTrue(amount > 100, "the laptop price is less than $100");
-        }
-
-
 
     }
 }
